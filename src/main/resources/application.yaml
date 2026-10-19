@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: incident-assistant
+  ai:
+    anthropic:
+      api-key: ${ANTHROPIC_API_KEY}
+      chat:
+        options:
+          model: claude-haiku-5-5
+          max-tokens: 1000
+  datasource:
+    url: jdbc:postgresql://localhost:5432/incident_assistant
+    username: ${DB_USERNAME:app}
+    password: ${DB_PASSWORD:app}
+  server:
+    port: 8081
