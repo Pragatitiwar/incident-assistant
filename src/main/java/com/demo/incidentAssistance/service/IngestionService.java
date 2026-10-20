@@ -44,7 +44,8 @@ public class IngestionService {
     private List<Document> chunk(String source, String content) {
         String[] parts = content.split("(?m)^## ");
 
-        String title = parts[0].lines().findFirst().orElse(source).replaceFirst("^# ", "");
+        String title = parts[0].lines().findFirst().orElse(source)
+                .replaceFirst("^#\\s*Runbook:\\s*", "").trim();
         List<Document> docs = new ArrayList<>();
         docs.add(toDocument(source, title, "Overview", parts[0]));
 
@@ -63,7 +64,7 @@ public class IngestionService {
 
     private Document toDocument(String source, String title, String section, String body) {
 
-        String text = "Runbook: " + title + "\nSection:" + section + "\n\n" + body.trim();
+        String text = "Runbook: " + title + "\nSection: " + section + "\n\n" + body.trim();
         String id = UUID.nameUUIDFromBytes((source + "#" + section).getBytes(StandardCharsets.UTF_8)).toString();
 
         return new Document(id, text, Map.of("source", source, "title", title, "section", section));
