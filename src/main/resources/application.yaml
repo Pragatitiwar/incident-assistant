@@ -8,9 +8,19 @@ spring:
         options:
           model: claude-haiku-5-5
           max-tokens: 1000
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+        dimensions: 384
+        distance-type: COSINE_DISTANCE
+        index-type: HNSW
+    embedding:
+      transformer:
+        onnx:
+          model-uri: https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/onnx/model.onnx
+        tokenizer:
+          uri: https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/tokenizer.json
   datasource:
     url: jdbc:postgresql://localhost:5432/incident_assistant
     username: ${DB_USERNAME:app}
     password: ${DB_PASSWORD:app}
-  server:
-    port: 8081

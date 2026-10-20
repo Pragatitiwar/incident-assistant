@@ -1,0 +1,142 @@
+[
+  {
+    "id": 1, "type": "lookup",
+    "question": "What Kubernetes command rolls back a bad payment-service deployment?",
+    "expectedSources": ["payment-service-500-errors"],
+    "mustContain": ["kubectl rollout undo", "payment-service"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 2, "type": "lookup",
+    "question": "Which HikariCP metric shows pool exhaustion when it stays above 0 for more than a minute?",
+    "expectedSources": ["payment-service-500-errors", "db-connection-pool-exhausted"],
+    "mustContain": ["hikaricp_connections_pending"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 3, "type": "lookup",
+    "question": "What is the default maximum-pool-size for HikariCP in our services?",
+    "expectedSources": ["db-connection-pool-exhausted"],
+    "mustContain": ["20"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 4, "type": "lookup",
+    "question": "How many partitions does the order-events topic have?",
+    "expectedSources": ["kafka-consumer-lag"],
+    "mustContain": ["12"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 5, "type": "lookup",
+    "question": "Which feature flag removes the recommendations widget from checkout?",
+    "expectedSources": ["high-latency-checkout-api"],
+    "mustContain": ["checkout.recommendations.enabled"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 6, "type": "lookup",
+    "question": "What does exit code 137 mean for a crashing pod?",
+    "expectedSources": ["pod-crashloopbackoff"],
+    "mustContain": ["OOMKilled"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 7, "type": "procedural",
+    "question": "How do I find long-running queries on the database during a connection pool incident?",
+    "expectedSources": ["db-connection-pool-exhausted"],
+    "mustContain": ["pg_stat_activity"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 8, "type": "procedural",
+    "question": "How do I see the consumer lag per partition for the order-processor group?",
+    "expectedSources": ["kafka-consumer-lag"],
+    "mustContain": ["kafka-consumer-groups.sh", "--describe"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 9, "type": "procedural",
+    "question": "What command shows the validity dates of the TLS certificate that api.example.com is serving?",
+    "expectedSources": ["certificate-expiry"],
+    "mustContain": ["openssl s_client", "-dates"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 10, "type": "procedural",
+    "question": "How do I expand a persistent volume that is almost full?",
+    "expectedSources": ["disk-space-full"],
+    "mustContain": ["kubectl patch pvc", "storage"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 11, "type": "procedural",
+    "question": "How do I read the logs of the container that crashed, not the restarted one?",
+    "expectedSources": ["pod-crashloopbackoff"],
+    "mustContain": ["--previous"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 12, "type": "procedural",
+    "question": "A poison message is blocking the order-processor consumer. What should I do, and what should I avoid?",
+    "expectedSources": ["kafka-consumer-lag"],
+    "mustContain": ["skip-to-dlq", "order-events.dlq", "delete"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 13, "type": "lookup",
+    "question": "Which Redis commands must never be run in production during an incident, and why?",
+    "expectedSources": ["redis-cache-failures"],
+    "mustContain": ["FLUSHALL", "logs out"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 14, "type": "cross-runbook",
+    "question": "Payment service errors are rising and hikaricp_connections_pending is above 0. What should I check and how do I fix it?",
+    "expectedSources": ["payment-service-500-errors", "db-connection-pool-exhausted"],
+    "mustContain": ["pg_stat_activity", "maximum-pool-size"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 15, "type": "cross-runbook",
+    "question": "Checkout latency is high and Redis is down. What is the stopgap and what should I monitor afterwards?",
+    "expectedSources": ["high-latency-checkout-api", "redis-cache-failures"],
+    "mustContain": ["fallback", "pool"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 16, "type": "cross-runbook",
+    "question": "Order-processor lag keeps growing because the downstream database is slow. Which other runbook applies and which metric should I look at first?",
+    "expectedSources": ["kafka-consumer-lag", "db-connection-pool-exhausted"],
+    "mustContain": ["db-connection-pool-exhausted", "hikaricp_connections_pending"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 17, "type": "cross-runbook",
+    "question": "A pod keeps restarting and its events say the node was low on ephemeral-storage. How do I find what is using the disk and free space?",
+    "expectedSources": ["pod-crashloopbackoff", "disk-space-full"],
+    "mustContain": ["df -h", "crictl rmi --prune"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 18, "type": "unanswerable",
+    "question": "How do I upgrade the Postgres primary from version 16 to version 17?",
+    "expectedSources": [],
+    "mustContain": [],
+    "expectDontKnow": true
+  },
+  {
+    "id": 19, "type": "unanswerable",
+    "question": "What is the SLA and on-call contact for the shipping-service?",
+    "expectedSources": [],
+    "mustContain": [],
+    "expectDontKnow": true
+  },
+  {
+    "id": 20, "type": "unanswerable",
+    "question": "How do I rotate the Kubernetes API server certificate?",
+    "expectedSources": [],
+    "mustContain": [],
+    "expectDontKnow": true
+  }
+]
