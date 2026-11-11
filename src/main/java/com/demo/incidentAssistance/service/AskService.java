@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.smartcardio.ATR;
@@ -36,15 +37,18 @@ public class AskService {
 
     private final RetrievalService retrievalService;
     private final ChatClient chatClient;
+    private final int topK;
 
-    public AskService(RetrievalService retrievalService, ChatClient.Builder builder) {
+    public AskService(RetrievalService retrievalService, ChatClient.Builder builder,
+                      @Value("${assistant.retrieval.top-k:4}") int topK) {
         this.retrievalService = retrievalService;
         this.chatClient = builder.defaultSystem(SYSTEM_PROMPT).build();
+        this.topK = topK;
     }
 
     public AskResponse ask(String question) {
 
-        List<SearchResult> results = retrievalService.search(question, 4);
+        List<SearchResult> results = retrievalService.search(question, topK);
 
         String context = IntStream.range(0, results.size())
                 .mapToObj(i -> "[" + (i+1) + "]" + results.get(i).text())
@@ -57,7 +61,7 @@ public class AskService {
 
                 Question: %s
                 """.formatted(context, question);
-        
+
         ChatResponse response = chatClient.prompt()
                 .user(userPrompt)
                 .call()
