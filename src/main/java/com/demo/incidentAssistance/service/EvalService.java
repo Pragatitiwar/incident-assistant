@@ -1,6 +1,8 @@
 package com.demo.incidentAssistance.service;
 
 import com.demo.incidentAssistance.dto.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class EvalService {
+    private static final Logger log = LoggerFactory.getLogger(EvalService.class);
 
     private final AskService askService;
     private final ObjectMapper mapper;
@@ -24,15 +27,25 @@ public class EvalService {
         this.mapper = mapper;
     }
 
-    public EvalReport run() throws IOException {
+    public EvalReport run(String set) throws IOException {
+        if (!set.matches("[a-z0-9-]+")) {
+            throw new IllegalArgumentException("Invalid question set name");
+        }
         EvalQuestion[] questions;
-        try (InputStream in = new ClassPathResource("eval/questions.json").getInputStream()) {
+        try (InputStream in = new ClassPathResource("eval/" + set + ".json").getInputStream()) {
             questions = mapper.readValue(in, EvalQuestion[].class);
         }
 
         List<EvalCaseResult> results = new ArrayList<>();
-        for (EvalQuestion q :  questions) {
-            results.add(evaluate(q));
+        for (EvalQuestion q : questions) {
+            try {
+                results.add(evaluate(q));
+            } catch (Exception e) {
+                log.error("Eval question {} failed", q.id(), e);
+                results.add(new EvalCaseResult(q.id(), q.type(), q.question(),
+                        false, 0.0, false, false, false,
+                        List.of("ERROR"), "ERROR: " + e.getMessage()));
+            }
         }
 
         List<EvalCaseResult> answerable = results.stream().filter(r -> !isUnanswerable(r, questions)).toList();

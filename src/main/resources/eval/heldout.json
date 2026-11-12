@@ -1,0 +1,98 @@
+[
+  {
+    "id": 101, "type": "lookup",
+    "question": "How long should I wait before escalating a slow checkout to the Checkout Team lead?",
+    "expectedSources": ["high-latency-checkout-api"],
+    "expectedChunks": ["high-latency-checkout-api#Escalation"],
+    "mustContain": ["30"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 102, "type": "lookup",
+    "question": "At what error rate does a payment-service incident count as SEV1?",
+    "expectedSources": ["payment-service-500-errors"],
+    "expectedChunks": ["payment-service-500-errors#Overview"],
+    "mustContain": ["5%", "5 minutes"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 103, "type": "procedural",
+    "question": "Kafka consumers keep rebalancing because processing is slow. Which setting should I change and to what value?",
+    "expectedSources": ["kafka-consumer-lag"],
+    "expectedChunks": ["kafka-consumer-lag#Fixes"],
+    "mustContain": ["max.poll.interval.ms", "600"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 104, "type": "lookup",
+    "question": "At what memory usage does the Redis memory alert fire?",
+    "expectedSources": ["redis-cache-failures"],
+    "expectedChunks": ["redis-cache-failures#Symptoms"],
+    "mustContain": ["85"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 105, "type": "procedural",
+    "question": "A node's logs are filling the disk. How much old log data can I safely delete?",
+    "expectedSources": ["disk-space-full"],
+    "expectedChunks": ["disk-space-full#Fixes"],
+    "mustContain": ["7 days", "24 hours"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 106, "type": "procedural",
+    "question": "My JVM service gets killed during startup because the liveness probe fires too early. What should I change?",
+    "expectedSources": ["pod-crashloopbackoff"],
+    "expectedChunks": ["pod-crashloopbackoff#Fixes"],
+    "mustContain": ["initialDelaySeconds", "60"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 107, "type": "cross-runbook",
+    "question": "Payment errors turn out to be caused by an unhealthy database. Who should I page?",
+    "expectedSources": ["payment-service-500-errors", "db-connection-pool-exhausted"],
+    "expectedChunks": ["db-connection-pool-exhausted#Escalation"],
+    "mustContain": ["dba"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 108, "type": "lookup",
+    "question": "Checkout is slow because the inventory service is struggling. Which setting can I change, and who must I tell first?",
+    "expectedSources": ["high-latency-checkout-api"],
+    "expectedChunks": ["high-latency-checkout-api#Fixes"],
+    "mustContain": ["inventory.check.mode", "incident commander"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 109, "type": "lookup",
+    "question": "What gateway latency threshold means the payment gateway is slow?",
+    "expectedSources": ["payment-service-500-errors"],
+    "expectedChunks": ["payment-service-500-errors#Diagnostic Steps"],
+    "mustContain": ["5 seconds"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 110, "type": "procedural",
+    "question": "We hit the certificate issuer's rate limit. What can we switch to?",
+    "expectedSources": ["certificate-expiry"],
+    "expectedChunks": ["certificate-expiry#Fixes"],
+    "mustContain": ["letsencrypt-backup"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 111, "type": "unanswerable",
+    "question": "What is the retention period for our production Kafka topics?",
+    "expectedSources": [],
+    "expectedChunks": [],
+    "mustContain": [],
+    "expectDontKnow": true
+  },
+  {
+    "id": 112, "type": "unanswerable",
+    "question": "How do I configure autoscaling for the payment-service?",
+    "expectedSources": [],
+    "expectedChunks": [],
+    "mustContain": [],
+    "expectDontKnow": true
+  }
+]

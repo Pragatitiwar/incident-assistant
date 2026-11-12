@@ -1,0 +1,42 @@
+[
+  {
+    "id": 201, "type": "tool",
+    "question": "What is the current error rate of payment-service?",
+    "expectedSources": [],
+    "expectedChunks": [],
+    "mustContain": ["7.2"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 202, "type": "tool",
+    "question": "Which version of payment-service is deployed, and when was it deployed?",
+    "expectedSources": [],
+    "expectedChunks": [],
+    "mustContain": ["v2.41.0", "72"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 203, "type": "tool",
+    "question": "How far behind is the order-processor consumer right now?",
+    "expectedSources": [],
+    "expectedChunks": [],
+    "mustContain": ["52"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 204, "type": "tool",
+    "question": "Is checkout-api healthy right now, and are there any recent errors?",
+    "expectedSources": [],
+    "expectedChunks": [],
+    "mustContain": ["healthy"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 205, "type": "unanswerable",
+    "question": "Is billing-service healthy right now?",
+    "expectedSources": [],
+    "expectedChunks": [],
+    "mustContain": [],
+    "expectDontKnow": true
+  }
+]

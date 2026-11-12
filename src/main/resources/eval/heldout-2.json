@@ -1,0 +1,90 @@
+[
+  {
+    "id": 301, "type": "lookup",
+    "question": "What is the maximum total number of connections we should allow per database?",
+    "expectedSources": ["db-connection-pool-exhausted"],
+    "expectedChunks": ["db-connection-pool-exhausted#Fixes"],
+    "mustContain": ["80"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 302, "type": "lookup",
+    "question": "What shows that a payment-service incident is resolved?",
+    "expectedSources": ["payment-service-500-errors"],
+    "expectedChunks": ["payment-service-500-errors#Verification"],
+    "mustContain": ["0.5%", "10 minutes"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 303, "type": "lookup",
+    "question": "Where do I post an update once the payment gateway is confirmed down?",
+    "expectedSources": ["payment-service-500-errors"],
+    "expectedChunks": ["payment-service-500-errors#Escalation"],
+    "mustContain": ["#incidents"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 304, "type": "lookup",
+    "question": "Kafka brokers have under-replicated partitions. Who do I page?",
+    "expectedSources": ["kafka-consumer-lag"],
+    "expectedChunks": ["kafka-consumer-lag#Escalation"],
+    "mustContain": ["streaming"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 305, "type": "procedural",
+    "question": "How do I find which Redis commands are running slowly?",
+    "expectedSources": ["redis-cache-failures"],
+    "expectedChunks": ["redis-cache-failures#Diagnostic Steps"],
+    "mustContain": ["SLOWLOG"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 306, "type": "lookup",
+    "question": "How long should I wait for a Redis failover to finish on its own?",
+    "expectedSources": ["redis-cache-failures"],
+    "expectedChunks": ["redis-cache-failures#Fixes"],
+    "mustContain": ["60 seconds"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 307, "type": "lookup",
+    "question": "At what disk usage levels does the node disk alert warn and go critical?",
+    "expectedSources": ["disk-space-full"],
+    "expectedChunks": ["disk-space-full#Symptoms"],
+    "mustContain": ["85", "92"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 308, "type": "procedural",
+    "question": "How do I see why a pod's container last terminated?",
+    "expectedSources": ["pod-crashloopbackoff"],
+    "expectedChunks": ["pod-crashloopbackoff#Diagnostic Steps"],
+    "mustContain": ["kubectl describe pod"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 309, "type": "tool",
+    "question": "Order-processor looks unhealthy right now. What should I do?",
+    "expectedSources": ["kafka-consumer-lag"],
+    "expectedChunks": ["kafka-consumer-lag#Fixes"],
+    "mustContain": ["replicas=12"],
+    "expectDontKnow": false
+  },
+  {
+    "id": 310, "type": "unanswerable",
+    "question": "What is the monthly cost of our Kafka cluster?",
+    "expectedSources": [],
+    "expectedChunks": [],
+    "mustContain": [],
+    "expectDontKnow": true
+  },
+  {
+    "id": 311, "type": "unanswerable",
+    "question": "How do I restore the payment database from a backup?",
+    "expectedSources": [],
+    "expectedChunks": [],
+    "mustContain": [],
+    "expectDontKnow": true
+  }
+]
