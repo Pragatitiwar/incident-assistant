@@ -4,6 +4,7 @@ import com.demo.incidentAssistance.dto.AskRequest;
 import com.demo.incidentAssistance.dto.AskResponse;
 import com.demo.incidentAssistance.dto.SearchResult;
 import com.demo.incidentAssistance.dto.Source;
+import com.demo.incidentAssistance.exception.AiServiceException;
 import com.demo.incidentAssistance.tools.OpsTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,11 +89,17 @@ public class AskService {
         List<SearchResult> toolResults = new ArrayList<>();
         OpsTools tools = new OpsTools(retrievalService, toolResults);
 
-        ChatResponse response = chatClient.prompt()
-                .user(userPrompt)
-                .tools(tools)
-                .call()
-                .chatResponse();
+        ChatResponse response;
+        try {
+            response = chatClient.prompt()
+                    .user(userPrompt)
+                    .tools(tools)
+                    .call()
+                    .chatResponse();
+        } catch (RuntimeException e) {
+            log.error("AI call failed", e);
+            throw new AiServiceException("The AI service is unavailable. Try again later.", e);
+        }
 
         log.info("finishReason={}, usage={}, generations={}",
                 response.getResult().getMetadata().getFinishReason(),
@@ -107,6 +114,9 @@ public class AskService {
                 .map(g -> g.getOutput().getText())
                 .filter(t -> t != null && !t.isBlank())
                 .collect(Collectors.joining("\n"));
+        if (answer.isBlank()) {
+            throw new AiServiceException("The AI service returned an empty response. Try again.", null);
+        }
 
         List<Source> sources = Stream.concat(results.stream(), toolResults.stream())
                 .map(r -> new Source(r.source(), r.section()))

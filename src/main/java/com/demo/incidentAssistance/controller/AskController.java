@@ -3,6 +3,7 @@ package com.demo.incidentAssistance.controller;
 import com.demo.incidentAssistance.dto.AskRequest;
 import com.demo.incidentAssistance.dto.AskResponse;
 import com.demo.incidentAssistance.service.AskService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,7 +18,7 @@ public class AskController {
     }
 
     @PostMapping("/ask")
-    public AskResponse ask(@RequestBody AskRequest askRequest) {
+    public AskResponse ask(@Valid @RequestBody AskRequest askRequest) {
         return askService.ask(askRequest.question());
     }
 }

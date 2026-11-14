@@ -3,6 +3,7 @@ package com.demo.incidentAssistance.controller;
 
 import com.demo.incidentAssistance.dto.ChatRequest;
 import com.demo.incidentAssistance.dto.ChatResponse;
+import jakarta.validation.Valid;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,7 +23,7 @@ public class ChatController {
     }
 
     @PostMapping("/chat")
-    public ChatResponse chat(@RequestBody ChatRequest request) {
+    public ChatResponse chat(@Valid @RequestBody ChatRequest request) {
         String answer = chatClient.prompt()
                 .user(request.question())
                 .call().content();
