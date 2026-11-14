@@ -9,6 +9,7 @@ import com.demo.incidentAssistance.tools.OpsTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -62,16 +63,18 @@ public class AskService {
     private final RetrievalService retrievalService;
     private final ChatClient chatClient;
     private final int topK;
+    private final AskMetrics metrics;
 
     public AskService(RetrievalService retrievalService, ChatClient.Builder builder,
-                      @Value("${assistant.retrieval.top-k:4}") int topK) {
+                      @Value("${assistant.retrieval.top-k:4}") int topK, AskMetrics metrics) {
         this.retrievalService = retrievalService;
         this.chatClient = builder.defaultSystem(SYSTEM_PROMPT).build();
         this.topK = topK;
+        this.metrics = metrics;
     }
 
     public AskResponse ask(String question) {
-
+        long start = System.nanoTime();
         List<SearchResult> results = retrievalService.search(question, topK);
 
         String context = IntStream.range(0, results.size())
@@ -117,6 +120,15 @@ public class AskService {
         if (answer.isBlank()) {
             throw new AiServiceException("The AI service returned an empty response. Try again.", null);
         }
+        Usage usage = response.getMetadata().getUsage();
+        long in = usage.getPromptTokens() == null ? 0 : usage.getPromptTokens();
+        long out = usage.getCompletionTokens() == null ? 0 : usage.getCompletionTokens();
+        boolean refused = answer.contains("find this in the runbooks");
+        long nanos = System.nanoTime() - start;
+        double cost = metrics.recordAsk(nanos, in, out, refused);
+
+        log.info("ask done: latencyMs={}, inputTokens={}, outputTokens={}, costUsd={}, refused={}, toolChunks={}",
+                nanos / 1_000_000, in, out, String.format("%.5f", cost), refused, toolResults.size());
 
         List<Source> sources = Stream.concat(results.stream(), toolResults.stream())
                 .map(r -> new Source(r.source(), r.section()))
