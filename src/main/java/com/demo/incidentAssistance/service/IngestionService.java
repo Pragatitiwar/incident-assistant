@@ -41,7 +41,7 @@ public class IngestionService {
         return new IngestionResult(files.length, chunks.size());
     }
 
-    private List<Document> chunk(String source, String content) {
+    public List<Document> chunk(String source, String content) {
         String[] parts = content.split("(?m)^## ");
 
         String title = parts[0].lines().findFirst().orElse(source)
