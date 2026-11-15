@@ -35,3 +35,7 @@ assistant:
   pricing:
     input-per-million: 0.10
     output-per-million: 0.50
+  security:
+    api-key: ${ASSISTANT_API_KEY}
+    admin-key: ${ASSISTANT_ADMIN_KEY}
+    rate-limit-per-minute: 10
