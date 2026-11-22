@@ -9,7 +9,11 @@ This is a learning project. It runs locally with Docker and is not deployed. All
 ## Demo
 
 <!-- Replace this line with the uploaded video or a thumbnail link, see the notes in the repository docs -->
-**[Watch the 90-second demo](<video-link>)**: starts the stack with Docker, loads the runbooks, then asks four questions: a runbook lookup, a question that needs live service state plus the runbook, a question the runbooks can't answer, and one that shows a known limitation.
+**[Watch the 90-second demo](
+
+https://github.com/user-attachments/assets/a68cd5d2-8b51-415f-9048-f6d499a10e77
+
+)**: starts the stack with Docker, loads the runbooks, then asks four questions: a runbook lookup, a question that needs live service state plus the runbook, a question the runbooks can't answer, and one that shows a known limitation.
 
 Real request and response examples are in [docs/examples.md](docs/examples.md).
 
