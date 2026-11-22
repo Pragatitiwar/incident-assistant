@@ -104,10 +104,9 @@ public class AskService {
             throw new AiServiceException("The AI service is unavailable. Try again later.", e);
         }
 
-        log.info("finishReason={}, usage={}, generations={}",
+        log.info("finishReason={}, usage={}",
                 response.getResult().getMetadata().getFinishReason(),
-                response.getMetadata().getUsage(),
-                response.getResults().size());
+                response.getMetadata().getUsage());
 
         response.getResults().forEach(g ->
                 log.info("generation text length={}",

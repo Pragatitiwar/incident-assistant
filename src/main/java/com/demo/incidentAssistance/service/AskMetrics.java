@@ -39,8 +39,4 @@ public class AskMetrics {
     public void recordFailure() {
         registry.counter("assistant.ask.failures").increment();
     }
-
-    public void recordToolCall(String tool) {
-        registry.counter("assistant.tool.calls", "tool", tool).increment();
-    }
 }

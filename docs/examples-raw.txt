@@ -1,0 +1,45 @@
+== Loading runbooks
+{"runbooks":8,"chunks":56}
+
+Q: What command rolls back a bad payment-service deployment?
+Run:
+
+`kubectl rollout undo deployment/payment-service -n payments` [2]
+
+Then confirm the error rate drops within 5 minutes [2]. The runbook's verification target is an error rate below 0.5% for 10 minutes [4].
+
+sources: db-connection-pool-exhausted / Overview; payment-service-500-errors / Diagnostic Steps; payment-service-500-errors / Escalation; payment-service-500-errors / Fixes; payment-service-500-errors / Likely Causes; payment-service-500-errors / Overview; payment-service-500-errors / Symptoms; payment-service-500-errors / Verification; pod-crashloopbackoff / Escalation; pod-crashloopbackoff / Overview
+
+Q: Is payment-service healthy right now, and what should I do about it?
+**No, payment-service is not healthy.** It is DEGRADED with a 7.2% error rate and p99 latency of 1850 ms (tool: getServiceHealth). Per the severity guide, an error rate above 5% is SEV1 [4]. All 8 pods are ready, so this is not a pod-availability problem (tool: getServiceHealth).
+
+**What's happening**
+- The database connection pool is exhausted: `hikaricp_connections_pending`=14 and 20 of 20 active connections are in use (tool: getServiceHealth).
+- Recent errors show `HikariPool-1 - Connection is not available, request timed out after 30000ms` and checkout failures with "could not obtain DB connection" (tool: getRecentErrors).
+- The last deployment was v2.41.0, 72 hours ago, so a recent deploy is unlikely the trigger (tool: lookupDeployment). This is my inference from those results, not a runbook rule.
+
+**What to do**
+1. **Declare SEV1 and escalate.** If not resolved within 20 minutes, page the Payments Team lead. If the gateway is confirmed down, notify the Incident Commander and post in #incidents [2].
+2. **Find long-running queries.** Run `SELECT pid, now() - query_start AS duration, state, left(query, 80) FROM pg_stat_activity WHERE state <> 'idle' ORDER BY duration DESC LIMIT 10;` [db-connection-pool-exhausted / Diagnostic Steps]
+3. **Find stuck transactions.** Run `SELECT pid, now() - xact_start AS xact_age, query FROM pg_stat_activity WHERE state = 'idle in transaction' ORDER BY xact_age DESC;` [db-connection-pool-exhausted / Diagnostic Steps]
+4. **Clear the blockers:**
+   - Cancel runaway queries with `SELECT pg_cancel_backend(<pid>);`. Use `pg_terminate_backend(<pid>)` only if the cancel fails, and never on replication or backup sessions [db-connection-pool-exhausted / Fixes].
+   - Terminate idle-in-transaction sessions older than 10 minutes with `pg_terminate_backend` [db-connection-pool-exhausted / Fixes].
+5. **If the traffic spike is the cause,** raise `spring.datasource.hikari.maximum-pool-size` in the service ConfigMap (for example 20 to 30), then run `kubectl rollout restart deployment/<service>`. Do not exceed 80 total connections per database [db-connection-pool-exhausted / Fixes].
+6. **Check for a connection leak.** Run `kubectl logs deployment/<service> -n <namespace> --since=15m | grep "Apparent connection leak"` [db-connection-pool-exhausted / Diagnostic Steps]. If a leak appears after a deploy, roll back with `kubectl rollout undo deployment/<service> -n <namespace>` [db-connection-pool-exhausted / Fixes]. Given the 72-hour-old deploy, this is less likely.
+
+**Verify recovery:** `hikaricp_connections_pending` returns to 0, active connections stay below 70% of max for 15 minutes, and the error rate is below 0.5% [db-connection-pool-exhausted / Verification]. Also confirm no new `PaymentService5xxHigh` alerts [5].
+
+**Caution:** Do not reprocess failed payments manually until you have checked for duplicate charges [2].
+
+sources: db-connection-pool-exhausted / Diagnostic Steps; db-connection-pool-exhausted / Fixes; db-connection-pool-exhausted / Overview; db-connection-pool-exhausted / Symptoms; db-connection-pool-exhausted / Verification; high-latency-checkout-api / Escalation; high-latency-checkout-api / Likely Causes; high-latency-checkout-api / Symptoms; payment-service-500-errors / Diagnostic Steps; payment-service-500-errors / Escalation; payment-service-500-errors / Fixes; payment-service-500-errors / Likely Causes; payment-service-500-errors / Overview; payment-service-500-errors / Symptoms; payment-service-500-errors / Verification
+
+Q: What gateway latency threshold means the payment gateway is slow?
+I couldn't find this in the runbooks.
+
+sources: high-latency-checkout-api / Diagnostic Steps; high-latency-checkout-api / Escalation; high-latency-checkout-api / Fixes; high-latency-checkout-api / Likely Causes; high-latency-checkout-api / Overview; high-latency-checkout-api / Symptoms; high-latency-checkout-api / Verification; payment-service-500-errors / Escalation; payment-service-500-errors / Likely Causes; payment-service-500-errors / Symptoms
+
+Q: How do I rotate the Kubernetes API server certificate?
+I couldn't find this in the runbooks.
+
+sources: certificate-expiry / Diagnostic Steps; certificate-expiry / Escalation; certificate-expiry / Fixes; certificate-expiry / Likely Causes; certificate-expiry / Overview; certificate-expiry / Symptoms; certificate-expiry / Verification; payment-service-500-errors / Diagnostic Steps; payment-service-500-errors / Fixes; pod-crashloopbackoff / Fixes
